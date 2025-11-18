@@ -1,5 +1,5 @@
-import Dexie, { Table } from 'dexie';
-import { Book } from '../types/book';
+import Dexie, { type Table } from 'dexie';
+import type { Book } from '../types/book';
 
 export class BookDatabase extends Dexie {
   books!: Table<Book, number>;
