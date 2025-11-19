@@ -6,6 +6,7 @@ import { BookDetail } from './BookDetail';
 import { BookListToolbar } from './BookListToolbar';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { exportBooksToCSV } from '../../services/csvExport';
 import type { Book } from '../../types/book';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 
@@ -45,6 +46,10 @@ export function BookList() {
     } finally {
       setClearAllDialogOpen(false);
     }
+  };
+
+  const handleExportCSV = () => {
+    exportBooksToCSV(books);
   };
 
   if (loading) {
@@ -91,6 +96,7 @@ export function BookList() {
       <BookListToolbar
         bookCount={books.length}
         onClearAll={() => setClearAllDialogOpen(true)}
+        onExportCSV={handleExportCSV}
       />
 
       <Box
