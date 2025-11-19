@@ -1,12 +1,14 @@
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface BookListToolbarProps {
   bookCount: number;
   onClearAll: () => void;
+  onExportCSV: () => void;
 }
 
-export function BookListToolbar({ bookCount, onClearAll }: BookListToolbarProps) {
+export function BookListToolbar({ bookCount, onClearAll, onExportCSV }: BookListToolbarProps) {
   return (
     <Box
       sx={{
@@ -22,15 +24,26 @@ export function BookListToolbar({ bookCount, onClearAll }: BookListToolbarProps)
       </Typography>
 
       {bookCount > 0 && (
-        <Tooltip title="すべて削除">
-          <IconButton
-            color="error"
-            onClick={onClearAll}
-            aria-label="すべて削除"
-          >
-            <DeleteSweepIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="CSVエクスポート">
+            <IconButton
+              color="primary"
+              onClick={onExportCSV}
+              aria-label="CSVエクスポート"
+            >
+              <DownloadIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="すべて削除">
+            <IconButton
+              color="error"
+              onClick={onClearAll}
+              aria-label="すべて削除"
+            >
+              <DeleteSweepIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       )}
     </Box>
   );
