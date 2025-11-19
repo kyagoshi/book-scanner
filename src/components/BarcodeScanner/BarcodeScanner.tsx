@@ -104,14 +104,24 @@ export function BarcodeScanner() {
   // スキャン開始
   const handleStartScanning = useCallback(async () => {
     try {
+      console.log('handleStartScanning called');
       await startCamera();
-      if (videoRef.current) {
-        await startScanning(videoRef.current, handleScan);
-      }
+      console.log('Camera started');
     } catch (error) {
       console.error('Failed to start scanning:', error);
     }
-  }, [startCamera, startScanning, videoRef, handleScan]);
+  }, [startCamera]);
+
+  // video要素が準備できたらスキャニングを開始
+  const handleVideoReady = useCallback(async (videoElement: HTMLVideoElement) => {
+    try {
+      console.log('Video element ready, starting barcode scanner');
+      await startScanning(videoElement, handleScan);
+      console.log('Barcode scanning started');
+    } catch (error) {
+      console.error('Failed to start barcode scanning:', error);
+    }
+  }, [startScanning, handleScan]);
 
   // スキャン停止
   const handleStopScanning = useCallback(() => {
@@ -135,6 +145,11 @@ export function BarcodeScanner() {
         <Typography variant="body1" color="text.secondary" gutterBottom>
           ISBNバーコードをカメラに向けてスキャンしてください
         </Typography>
+        {isActive && (
+          <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
+            💡 9から始まるバーコード（ISBN-13）を緑の枠内に収めてください
+          </Typography>
+        )}
       </Box>
 
       {cameraError && (
@@ -145,7 +160,12 @@ export function BarcodeScanner() {
 
       {isActive ? (
         <>
-          <CameraView videoRef={videoRef} stream={stream} isActive={isActive} />
+          <CameraView 
+            videoRef={videoRef} 
+            stream={stream} 
+            isActive={isActive}
+            onStartScanning={handleVideoReady}
+          />
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
             <Button
               variant="contained"

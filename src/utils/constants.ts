@@ -8,7 +8,8 @@ export const API_CONFIG = {
 export const SCANNER_CONFIG = {
   VIDEO_CONSTRAINTS: {
     facingMode: { ideal: 'environment' },
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
+    width: { ideal: 1920, min: 1280 },
+    height: { ideal: 1080, min: 720 },
+    aspectRatio: { ideal: 16 / 9 },
   },
 } as const;
