@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -31,6 +31,7 @@ export function BarcodeScanner() {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(null);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const processingRef = useRef(false);
 
   // フィードバック表示
   const showFeedback = useCallback((type: FeedbackType, message: string, severity: 'success' | 'error' | 'warning') => {
@@ -61,8 +62,9 @@ export function BarcodeScanner() {
   // ISBNスキャン時の処理
   const handleScan = useCallback(
     async (isbn: string) => {
-      if (processing) return;
+      if (processingRef.current) return;
 
+      processingRef.current = true;
       setProcessing(true);
 
       try {
@@ -70,6 +72,7 @@ export function BarcodeScanner() {
         const exists = await isBookExists(isbn);
         if (exists) {
           showFeedback('warning', 'この書籍は既に登録済みです', 'warning');
+          processingRef.current = false;
           setProcessing(false);
           return;
         }
@@ -79,6 +82,7 @@ export function BarcodeScanner() {
 
         if (!book) {
           showFeedback('error', '書籍情報が見つかりませんでした', 'error');
+          processingRef.current = false;
           setProcessing(false);
           return;
         }
@@ -90,10 +94,11 @@ export function BarcodeScanner() {
         console.error('Failed to process scanned ISBN:', error);
         showFeedback('error', '書籍の追加に失敗しました', 'error');
       } finally {
+        processingRef.current = false;
         setProcessing(false);
       }
     },
-    [processing, isBookExists, searchBook, addBook, showFeedback]
+    [isBookExists, searchBook, addBook, showFeedback]
   );
 
   // スキャン開始

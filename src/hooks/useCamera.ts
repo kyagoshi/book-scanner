@@ -6,6 +6,7 @@ export function useCamera() {
   const [error, setError] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // カメラを起動
   const startCamera = useCallback(async () => {
@@ -17,6 +18,7 @@ export function useCamera() {
       });
 
       setStream(mediaStream);
+      streamRef.current = mediaStream;
       setIsActive(true);
 
       if (videoRef.current) {
@@ -39,8 +41,9 @@ export function useCamera() {
 
   // カメラを停止
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       setStream(null);
       setIsActive(false);
 
@@ -48,16 +51,16 @@ export function useCamera() {
         videoRef.current.srcObject = null;
       }
     }
-  }, [stream]);
+  }, []);
 
   // コンポーネントアンマウント時にクリーンアップ
   useEffect(() => {
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [stream]);
+  }, []);
 
   return {
     videoRef,
