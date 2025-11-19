@@ -20,7 +20,7 @@ import { ScanFeedback } from './ScanFeedback';
 type FeedbackType = 'success' | 'error' | 'warning' | null;
 
 export function BarcodeScanner() {
-  const { videoRef, isActive, error: cameraError, startCamera, stopCamera } = useCamera();
+  const { videoRef, stream, isActive, error: cameraError, startCamera, stopCamera } = useCamera();
   const { startScanning, stopScanning } = useBarcodeScanner();
   const { searchBook } = useBookAPI();
   const { addBook, isBookExists } = useBookStorage();
@@ -145,7 +145,7 @@ export function BarcodeScanner() {
 
       {isActive ? (
         <>
-          <CameraView videoRef={videoRef} isActive={isActive} />
+          <CameraView videoRef={videoRef} stream={stream} isActive={isActive} />
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
             <Button
               variant="contained"

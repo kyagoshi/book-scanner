@@ -20,10 +20,6 @@ export function useCamera() {
       setStream(mediaStream);
       streamRef.current = mediaStream;
       setIsActive(true);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
     } catch (err) {
       const errorMessage =
         err instanceof Error

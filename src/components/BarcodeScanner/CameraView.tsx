@@ -3,15 +3,19 @@ import { useEffect } from 'react';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
+  stream: MediaStream | null;
   isActive: boolean;
 }
 
-export function CameraView({ videoRef, isActive }: CameraViewProps) {
+export function CameraView({ videoRef, stream, isActive }: CameraViewProps) {
   useEffect(() => {
-    if (videoRef.current && isActive) {
-      videoRef.current.play();
+    if (videoRef.current && stream && isActive) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(err => {
+        console.error('Error playing video:', err);
+      });
     }
-  }, [videoRef, isActive]);
+  }, [videoRef, stream, isActive]);
 
   return (
     <Paper
@@ -24,6 +28,8 @@ export function CameraView({ videoRef, isActive }: CameraViewProps) {
         overflow: 'hidden',
         borderRadius: 2,
         backgroundColor: '#000',
+        aspectRatio: '4 / 3',
+        minHeight: 480,
       }}
     >
       <Box
@@ -34,8 +40,10 @@ export function CameraView({ videoRef, isActive }: CameraViewProps) {
         muted
         sx={{
           width: '100%',
-          height: 'auto',
+          height: '100%',
           display: 'block',
+          objectFit: 'cover',
+          backgroundColor: '#000',
         }}
       />
       {/* スキャンガイド */}
