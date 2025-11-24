@@ -7,11 +7,12 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import { useCamera } from '../../hooks/useCamera';
-import { useBarcodeScanner } from '../../hooks/useBarcodeScanner';
+import { useBarcodeScanner, type BarcodeDetectionResult } from '../../hooks/useBarcodeScanner';
 import { useBookAPI } from '../../hooks/useBookAPI';
 import { useBookStorage } from '../../hooks/useBookStorage';
 import { CameraView } from './CameraView';
@@ -21,7 +22,7 @@ type FeedbackType = 'success' | 'error' | 'warning' | null;
 
 export function BarcodeScanner() {
   const { videoRef, stream, isActive, error: cameraError, startCamera, stopCamera } = useCamera();
-  const { startScanning, stopScanning } = useBarcodeScanner();
+  const { startScanning, stopScanning, engine } = useBarcodeScanner();
   const { searchBook } = useBookAPI();
   const { addBook, isBookExists } = useBookStorage();
 
@@ -61,17 +62,19 @@ export function BarcodeScanner() {
 
   // ISBNスキャン時の処理
   const handleScan = useCallback(
-    async (isbn: string) => {
+    async ({ isbn, engine: detectionEngine }: BarcodeDetectionResult) => {
       if (processingRef.current) return;
 
       processingRef.current = true;
       setProcessing(true);
 
+      const engineLabel = detectionEngine === 'shape-detection' ? 'Shape Detection API' : 'ZXing';
+
       try {
         // 既存チェック
         const exists = await isBookExists(isbn);
         if (exists) {
-          showFeedback('warning', 'この書籍は既に登録済みです', 'warning');
+          showFeedback('warning', `この書籍は既に登録済みです（${engineLabel}）`, 'warning');
           processingRef.current = false;
           setProcessing(false);
           return;
@@ -81,7 +84,7 @@ export function BarcodeScanner() {
         const book = await searchBook(isbn);
 
         if (!book) {
-          showFeedback('error', '書籍情報が見つかりませんでした', 'error');
+          showFeedback('error', `書籍情報が見つかりませんでした（${engineLabel}）`, 'error');
           processingRef.current = false;
           setProcessing(false);
           return;
@@ -89,7 +92,7 @@ export function BarcodeScanner() {
 
         // 保存
         await addBook(book);
-        showFeedback('success', `「${book.title}」を追加しました`, 'success');
+        showFeedback('success', `「${book.title}」を追加しました（${engineLabel}）`, 'success');
       } catch (error) {
         console.error('Failed to process scanned ISBN:', error);
         showFeedback('error', '書籍の追加に失敗しました', 'error');
@@ -144,6 +147,38 @@ export function BarcodeScanner() {
         </Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom>
           ISBNバーコードをカメラに向けてスキャンしてください
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+            mt: 2,
+          }}
+        >
+          <Chip
+            label={`検出モード: ${engine === 'shape-detection' ? 'Shape Detection API' : 'ZXingフォールバック'}`}
+            color={engine === 'shape-detection' ? 'success' : 'warning'}
+            variant="outlined"
+            size="small"
+          />
+          <Chip
+            label={engine === 'shape-detection' ? '横向きバーコード対応' : '横向きはフォールバック中'}
+            color="info"
+            variant="outlined"
+            size="small"
+          />
+        </Box>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          display="block"
+          sx={{ mt: 1 }}
+        >
+          {engine === 'shape-detection'
+            ? 'Shape Detection APIが有効なため、横向きでも緑の枠に合わせれば検出できます。'
+            : 'ブラウザがShape Detection APIに未対応のためZXingモードで動作中です。横向きバーコードは縦向きにして合わせてください。'}
         </Typography>
         {isActive && (
           <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
